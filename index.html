@@ -1,0 +1,481 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .app { min-height: 100vh; padding: 0; }
+  .login-screen { display: flex; align-items: center; justify-content: center; min-height: 500px; }
+  .login-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 2.5rem 2rem; width: 100%; max-width: 380px; }
+  .login-logo { text-align: center; margin-bottom: 2rem; }
+  .login-logo-icon { width: 52px; height: 52px; background: #1a3a5c; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; }
+  .login-logo-icon i { color: #fff; font-size: 26px; }
+  .login-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+  .login-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-size: 13px; color: var(--color-text-secondary); margin-bottom: 6px; }
+  .form-group input { width: 100%; padding: 10px 12px; font-size: 14px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); outline: none; }
+  .form-group input:focus { border-color: #1a3a5c; box-shadow: 0 0 0 3px rgba(26,58,92,0.1); }
+  .login-btn { width: 100%; padding: 11px; background: #1a3a5c; color: #fff; border: none; border-radius: var(--border-radius-md); font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 0.5rem; }
+  .login-btn:hover { background: #153049; }
+  .login-error { font-size: 12px; color: var(--color-text-danger); margin-top: 8px; text-align: center; display: none; }
+  
+  .main-app { display: none; }
+  .topbar { background: #1a3a5c; padding: 0 1.5rem; height: 52px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .topbar-logo { color: #fff; font-size: 15px; font-weight: 500; }
+  .topbar-sub { color: rgba(255,255,255,0.55); font-size: 12px; }
+  .topbar-nav { display: flex; gap: 4px; }
+  .nav-btn { padding: 6px 14px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer; border: none; background: transparent; color: rgba(255,255,255,0.7); }
+  .nav-btn.active { background: rgba(255,255,255,0.15); color: #fff; }
+  .nav-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .logout-btn { background: transparent; border: 0.5px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); padding: 5px 10px; border-radius: var(--border-radius-md); font-size: 12px; cursor: pointer; }
+  .logout-btn:hover { color: #fff; border-color: rgba(255,255,255,0.6); }
+
+  .page { display: none; padding: 1.5rem; }
+  .page.active { display: block; }
+
+  .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  @media (max-width: 620px) { .calc-grid { grid-template-columns: 1fr; } }
+
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem 1.5rem; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem; }
+
+  .input-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 1rem; }
+  .input-row:last-child { margin-bottom: 0; }
+  .input-row label { font-size: 13px; color: var(--color-text-secondary); }
+  .input-row select, .input-row input[type="number"] { width: 100%; padding: 9px 10px; font-size: 14px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); }
+  .input-row select:focus, .input-row input:focus { outline: none; border-color: #1a3a5c; }
+
+  .results-grid { display: flex; flex-direction: column; gap: 10px; }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: var(--border-radius-md); background: var(--color-background-secondary); }
+  .result-label { font-size: 13px; color: var(--color-text-secondary); display: flex; align-items: center; gap: 6px; }
+  .result-val { font-size: 16px; font-weight: 500; }
+  .r-cost { color: var(--color-text-primary); }
+  .r-min { background: #fff5f5; border: 0.5px solid #f7c1c1; }
+  .r-min .result-val { color: #a32d2d; }
+  .r-min .result-label { color: #a32d2d; }
+  .r-target { background: #fef9ee; border: 0.5px solid #fac775; }
+  .r-target .result-val { color: #854f0b; }
+  .r-target .result-label { color: #854f0b; }
+  .r-list { background: #f0f8ff; border: 0.5px solid #b5d4f4; }
+  .r-list .result-val { color: #185fa5; }
+  .r-list .result-label { color: #185fa5; }
+  .r-margin-pos .result-val { color: #3b6d11; }
+  .r-margin-neg .result-val { color: #a32d2d; }
+  .r-discount .result-val { color: var(--color-text-primary); }
+
+  .save-bar { margin-top: 1.25rem; display: flex; gap: 10px; align-items: flex-end; }
+  .save-bar input, .save-bar textarea { flex: 1; padding: 9px 10px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); }
+  .save-bar textarea { resize: none; height: 60px; }
+  .save-btn { padding: 9px 18px; background: #1a3a5c; color: #fff; border: none; border-radius: var(--border-radius-md); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+  .save-btn:hover { background: #153049; }
+  .save-inputs { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+  .min-tag { font-size: 11px; background: #f7c1c1; color: #a32d2d; padding: 2px 7px; border-radius: 99px; }
+
+  .history-grid { display: flex; flex-direction: column; gap: 12px; }
+  .hist-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem 1.5rem; }
+  .hist-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+  .hist-name { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+  .hist-date { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .hist-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 11px; padding: 3px 9px; border-radius: 99px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); }
+  .hist-numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-top: 1rem; }
+  .hist-num { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 10px; }
+  .hist-num-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 2px; }
+  .hist-num-val { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+  .hist-note-section { margin-top: 1rem; border-top: 0.5px solid var(--color-border-tertiary); padding-top: 1rem; }
+  .hist-note-text { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; white-space: pre-wrap; }
+  .hist-actions { display: flex; gap: 8px; align-items: center; }
+  .icon-btn { background: transparent; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 5px 9px; cursor: pointer; color: var(--color-text-secondary); font-size: 13px; display: flex; align-items: center; gap: 5px; }
+  .icon-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .icon-btn.danger:hover { color: #a32d2d; border-color: #f7c1c1; background: #fff5f5; }
+  .edit-note-box { width: 100%; margin-top: 8px; padding: 8px 10px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); resize: none; min-height: 70px; }
+  .edit-note-box:focus { outline: none; border-color: #1a3a5c; }
+  .save-note-btn { margin-top: 6px; padding: 6px 14px; background: #1a3a5c; color: #fff; border: none; border-radius: var(--border-radius-md); font-size: 12px; cursor: pointer; }
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--color-text-secondary); }
+  .empty-state i { font-size: 36px; margin-bottom: 0.75rem; display: block; }
+  .page-header { margin-bottom: 1.25rem; }
+  .page-header h2 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+  .page-header p { font-size: 13px; color: var(--color-text-secondary); margin-top: 3px; }
+  .margin-bar { height: 6px; background: var(--color-background-secondary); border-radius: 99px; margin-top: 6px; overflow: hidden; }
+  .margin-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+</style>
+
+<div class="app" id="app">
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon"><i class="ti ti-building-warehouse" aria-hidden="true"></i></div>
+        <div class="login-title">Metalsistem</div>
+        <div class="login-sub">Centro Costi & Preventivatore</div>
+      </div>
+      <div class="form-group">
+        <label>Utente</label>
+        <input type="text" id="loginUser" placeholder="utente" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button class="login-btn" onclick="doLogin()">Accedi</button>
+      <div class="login-error" id="loginErr">Credenziali non valide</div>
+    </div>
+  </div>
+
+  <div class="main-app" id="mainApp">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-logo">Metalsistem</div>
+          <div class="topbar-sub">Centro Costi</div>
+        </div>
+      </div>
+      <div class="topbar-nav">
+        <button class="nav-btn active" id="navCalc" onclick="showPage('calc')">Preventivo</button>
+        <button class="nav-btn" id="navHist" onclick="showPage('hist')">Storico</button>
+      </div>
+      <div class="topbar-right">
+        <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout" aria-hidden="true"></i> Esci</button>
+      </div>
+    </div>
+
+    <div class="page active" id="pageCalc">
+      <div class="calc-grid">
+        <div>
+          <div class="card">
+            <div class="card-title">Dati commessa</div>
+            <div class="input-row">
+              <label>Dimensione</label>
+              <select id="dim" onchange="calc()">
+                <option value="PICCOLO">Piccolo</option>
+                <option value="MEDIO">Medio</option>
+                <option value="GRANDE">Grande</option>
+              </select>
+            </div>
+            <div class="input-row">
+              <label>Distanza</label>
+              <select id="dist" onchange="calc()">
+                <option value="VICINO">Vicino</option>
+                <option value="MEDIO">Medio</option>
+                <option value="LONTANO">Lontano</option>
+              </select>
+            </div>
+            <div class="input-row">
+              <label>Complessità</label>
+              <select id="compl" onchange="calc()">
+                <option value="SEMPLICE">Semplice</option>
+                <option value="MEDIO">Medio</option>
+                <option value="COMPLESSO">Complesso</option>
+              </select>
+            </div>
+            <div class="input-row">
+              <label>Costo materiale (&euro;)</label>
+              <input type="number" id="matCost" value="0" min="0" step="100" oninput="calc()" />
+            </div>
+            <div class="input-row">
+              <label>Costo trasporto materiale (&euro;)</label>
+              <input type="number" id="matTransport" value="0" min="0" step="50" oninput="calc()" />
+            </div>
+            <div class="input-row">
+              <label>Giorni montaggio</label>
+              <input type="number" id="days" value="2" min="0" step="1" oninput="calc()" />
+            </div>
+            <div class="input-row">
+              <label>Numero persone montaggio</label>
+              <input type="number" id="persons" value="2" min="1" step="1" oninput="calc()" />
+            </div>
+            <div class="input-row">
+              <label>Prezzo di vendita (&euro;) <span style="font-size:11px;color:var(--color-text-secondary)">(facoltativo)</span></label>
+              <input type="number" id="sellPrice" value="" min="0" step="100" placeholder="es. 5000" oninput="calc()" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-title">Centro costi e preventivatore</div>
+            <div class="results-grid">
+              <div class="result-row">
+                <span class="result-label"><i class="ti ti-calculator" aria-hidden="true"></i> Costo reale commessa</span>
+                <span class="result-val r-cost" id="rCost">—</span>
+              </div>
+              <div class="result-row r-min">
+                <span class="result-label"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Prezzo minimo <span class="min-tag">non scendere sotto</span></span>
+                <span class="result-val" id="rMin">—</span>
+              </div>
+              <div class="result-row r-target">
+                <span class="result-label"><i class="ti ti-target" aria-hidden="true"></i> Prezzo target</span>
+                <span class="result-val" id="rTarget">—</span>
+              </div>
+              <div class="result-row r-list">
+                <span class="result-label"><i class="ti ti-tag" aria-hidden="true"></i> Prezzo listino</span>
+                <span class="result-val" id="rList">—</span>
+              </div>
+              <div class="result-row" id="rMarginERow">
+                <span class="result-label"><i class="ti ti-coin-euro" aria-hidden="true"></i> Margine &euro;</span>
+                <span class="result-val" id="rMarginE">—</span>
+              </div>
+              <div class="result-row" id="rMarginPRow">
+                <span class="result-label"><i class="ti ti-percent" aria-hidden="true"></i> Margine %</span>
+                <span class="result-val" id="rMarginP">—</span>
+              </div>
+              <div id="marginBarWrap" style="padding: 0 12px 6px; display:none;">
+                <div class="margin-bar"><div class="margin-fill" id="marginFill"></div></div>
+              </div>
+              <div class="result-row r-discount">
+                <span class="result-label"><i class="ti ti-scissors" aria-hidden="true"></i> Sconto massimo</span>
+                <span class="result-val" id="rDiscount">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 1rem;">
+            <div class="card-title">Salva nello storico</div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="input-row" style="margin-bottom: 0;">
+                <label>Nome cliente / commessa</label>
+                <input type="text" id="saveName" placeholder="es. Cliente Rossi - Magazzino Via Roma" style="padding: 9px 10px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary);" />
+              </div>
+              <div class="input-row" style="margin-bottom: 0;">
+                <label>Note</label>
+                <textarea id="saveNote" placeholder="Aggiungi note sulla commessa..." style="padding: 9px 10px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); resize: none; height: 60px;"></textarea>
+              </div>
+              <button class="save-btn" onclick="saveToHistory()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Salva in storico</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="pageHist">
+      <div class="page-header">
+        <h2>Storico preventivi</h2>
+        <p>Tutti i preventivi salvati con dati, risultati e note</p>
+      </div>
+      <div class="history-grid" id="historyGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const USERS = { metalsistem: 'ms2024', admin: 'scaffali' };
+
+const DATA = {
+  // Costo operativo persona per dimensione (da "COSTO OPERATIVO COMMESSA" dell'Excel)
+  personBase: { PICCOLO: 509.727891156464, MEDIO: 1025.91836734694, GRANDE: 2600.36281179138 },
+  complexity: { SEMPLICE: 1, MEDIO: 1.5, COMPLESSO: 2 },
+  distance: {
+    VICINO:  { hours: 1,   km: 30,  kmCost: 15 },
+    MEDIO:   { hours: 2.5, km: 160, kmCost: 80 },
+    LONTANO: { hours: 3.5, km: 300, kmCost: 150 }
+  },
+  visits: {
+    PICCOLO: { comm: 2, tech: 1 },
+    MEDIO:   { comm: 4, tech: 2 },
+    GRANDE:  { comm: 6, tech: 3 }
+  },
+  // Costo orario reale EUR/h (costo annuo / ore reali) - da "COSTO ORARIO PER RUOLO"
+  costPerHour: { comm: 16800 / 1080, tech: 46000 / 1260 },
+  install: { costPerDayPerPerson: 220 },
+  extra: { sicurezza: 160, piattaforma: 50, trasportoPiattaforma: 300 },
+  margins: { min: 0.20, target: 0.30, listino: 0.40 }
+};
+
+let history = JSON.parse(localStorage.getItem('ms_history') || '[]');
+let lastResult = null;
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim().toLowerCase();
+  const p = document.getElementById('loginPass').value;
+  if (USERS[u] && USERS[u] === p) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    calc();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('mainApp').style.display = 'none';
+}
+
+function showPage(p) {
+  document.getElementById('pageCalc').classList.toggle('active', p === 'calc');
+  document.getElementById('pageHist').classList.toggle('active', p === 'hist');
+  document.getElementById('navCalc').classList.toggle('active', p === 'calc');
+  document.getElementById('navHist').classList.toggle('active', p === 'hist');
+  if (p === 'hist') renderHistory();
+}
+
+function fmt(n) { return '\u20AC ' + n.toLocaleString('it-IT', {minimumFractionDigits: 0, maximumFractionDigits: 0}); }
+function fmtPct(n) { return (n * 100).toFixed(1) + ' %'; }
+
+function calc() {
+  const dim = document.getElementById('dim').value;
+  const dist = document.getElementById('dist').value;
+  const compl = document.getElementById('compl').value;
+  const matCost = parseFloat(document.getElementById('matCost').value) || 0;
+  const matTransport = parseFloat(document.getElementById('matTransport').value) || 0;
+  const days = parseFloat(document.getElementById('days').value) || 0;
+  const persons = parseFloat(document.getElementById('persons').value) || 1;
+  const sellStr = document.getElementById('sellPrice').value;
+  const sell = sellStr !== '' ? parseFloat(sellStr) : null;
+
+  const d = DATA;
+  const personBase = d.personBase[dim];
+  const multCompl = d.complexity[compl];
+  const personCorr = personBase * multCompl;
+
+  const distData = d.distance[dist];
+  const vis = d.visits[dim];
+  const costCommSpost = distData.hours * vis.comm * d.costPerHour.comm;
+  const costTechSpost = distData.hours * vis.tech * d.costPerHour.tech;
+  const costKm = distData.kmCost * vis.comm;
+  const spostTot = costCommSpost + costTechSpost + costKm;
+  const clusterCost = personCorr + spostTot;
+
+  const extraPiattaforma = d.extra.piattaforma * days;
+  const extraFixed = d.extra.sicurezza + d.extra.trasportoPiattaforma;
+  const mountCost = (days * persons * d.install.costPerDayPerPerson) + extraFixed + extraPiattaforma;
+
+  const totalReal = clusterCost + mountCost + matCost + matTransport;
+  const priceMin = totalReal / (1 - d.margins.min);
+  const priceTarget = totalReal / (1 - d.margins.target);
+  const priceList = priceTarget / (1 - d.margins.listino);
+  const maxDiscountPct = 1 - (priceMin / priceList);
+  const maxDiscountEur = priceList - priceMin;
+
+  let marginE = null, marginP = null;
+  if (sell !== null && sell > 0) {
+    marginE = sell - totalReal;
+    marginP = marginE / sell;
+  }
+
+  lastResult = { dim, dist, compl, matCost, matTransport, days, persons, sell, totalReal, priceMin, priceTarget, priceList, maxDiscountPct, maxDiscountEur, marginE, marginP };
+
+  document.getElementById('rCost').textContent = fmt(totalReal);
+  document.getElementById('rMin').textContent = fmt(priceMin);
+  document.getElementById('rTarget').textContent = fmt(priceTarget);
+  document.getElementById('rList').textContent = fmt(priceList);
+  document.getElementById('rDiscount').textContent = fmtPct(maxDiscountPct) + '  (' + fmt(maxDiscountEur) + ')';
+
+  const marginEEl = document.getElementById('rMarginE');
+  const marginPEl = document.getElementById('rMarginP');
+  const marginERow = document.getElementById('rMarginERow');
+  const marginPRow = document.getElementById('rMarginPRow');
+  const barWrap = document.getElementById('marginBarWrap');
+
+  if (sell !== null && sell > 0) {
+    marginEEl.textContent = fmt(marginE);
+    marginPEl.textContent = fmtPct(marginP);
+    const pos = marginE >= 0;
+    marginERow.className = 'result-row ' + (pos ? 'r-margin-pos' : 'r-margin-neg');
+    marginPRow.className = 'result-row ' + (pos ? 'r-margin-pos' : 'r-margin-neg');
+    const pct = Math.max(0, Math.min(100, marginP * 100));
+    const fill = document.getElementById('marginFill');
+    fill.style.width = pct + '%';
+    fill.style.background = pos ? '#639922' : '#a32d2d';
+    barWrap.style.display = 'block';
+  } else {
+    marginEEl.textContent = '—';
+    marginPEl.textContent = '—';
+    marginERow.className = 'result-row';
+    marginPRow.className = 'result-row';
+    barWrap.style.display = 'none';
+  }
+}
+
+function saveToHistory() {
+  if (!lastResult) return;
+  const name = document.getElementById('saveName').value.trim() || 'Commessa senza nome';
+  const note = document.getElementById('saveNote').value.trim();
+  const entry = { id: Date.now(), name, note, date: new Date().toLocaleDateString('it-IT'), ...lastResult };
+  history.unshift(entry);
+  localStorage.setItem('ms_history', JSON.stringify(history));
+  document.getElementById('saveName').value = '';
+  document.getElementById('saveNote').value = '';
+  const btn = document.querySelector('.save-btn');
+  btn.textContent = '✓ Salvato!';
+  setTimeout(() => { btn.innerHTML = '<i class="ti ti-device-floppy"></i> Salva in storico'; }, 1800);
+}
+
+function renderHistory() {
+  const grid = document.getElementById('historyGrid');
+  if (history.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><i class="ti ti-archive" aria-hidden="true"></i><p>Nessun preventivo salvato.<br>Torna al preventivatore e salva il primo!</p></div>';
+    return;
+  }
+  grid.innerHTML = history.map((e, i) => `
+    <div class="hist-card" id="hcard${e.id}">
+      <div class="hist-header">
+        <div>
+          <div class="hist-name">${e.name}</div>
+          <div class="hist-date">${e.date}</div>
+        </div>
+        <div class="hist-actions">
+          <button class="icon-btn" onclick="toggleNote(${e.id})"><i class="ti ti-notes" aria-hidden="true"></i> Note</button>
+          <button class="icon-btn danger" onclick="deleteEntry(${e.id})"><i class="ti ti-trash" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="hist-meta">
+        <span class="tag">${e.dim}</span>
+        <span class="tag">${e.dist}</span>
+        <span class="tag">${e.compl}</span>
+        ${e.days ? `<span class="tag">${e.days} gg × ${e.persons} pers.</span>` : ''}
+        ${e.matCost ? `<span class="tag">Materiale: ${fmt(e.matCost)}</span>` : ''}
+        ${e.matTransport ? `<span class="tag">Trasporto mat.: ${fmt(e.matTransport)}</span>` : ''}
+      </div>
+      <div class="hist-numbers">
+        <div class="hist-num"><div class="hist-num-label">Costo reale</div><div class="hist-num-val">${fmt(e.totalReal)}</div></div>
+        <div class="hist-num" style="border-left: 3px solid #f09595;"><div class="hist-num-label">Prezzo minimo</div><div class="hist-num-val" style="color:#a32d2d">${fmt(e.priceMin)}</div></div>
+        <div class="hist-num" style="border-left: 3px solid #fac775;"><div class="hist-num-label">Prezzo target</div><div class="hist-num-val" style="color:#854f0b">${fmt(e.priceTarget)}</div></div>
+        <div class="hist-num" style="border-left: 3px solid #85b7eb;"><div class="hist-num-label">Prezzo listino</div><div class="hist-num-val" style="color:#185fa5">${fmt(e.priceList)}</div></div>
+        ${e.sell ? `<div class="hist-num" style="border-left: 3px solid ${e.marginE>=0?'#97c459':'#f09595'};"><div class="hist-num-label">Prezzo vendita</div><div class="hist-num-val">${fmt(e.sell)}</div></div>` : ''}
+        ${e.marginE !== null ? `<div class="hist-num"><div class="hist-num-label">Margine</div><div class="hist-num-val" style="color:${e.marginE>=0?'#3b6d11':'#a32d2d'}">${fmtPct(e.marginP)}</div></div>` : ''}
+      </div>
+      <div class="hist-note-section" id="noteSection${e.id}" style="display:none;">
+        <div class="hist-note-text" id="noteText${e.id}">${e.note || '<em style="color:var(--color-text-secondary)">Nessuna nota</em>'}</div>
+        <textarea class="edit-note-box" id="noteEdit${e.id}" style="display:none;">${e.note || ''}</textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="icon-btn" id="noteEditBtn${e.id}" onclick="editNote(${e.id})"><i class="ti ti-edit" aria-hidden="true"></i> Modifica</button>
+          <button class="save-note-btn" id="noteSaveBtn${e.id}" style="display:none;" onclick="saveNote(${e.id})"><i class="ti ti-check"></i> Salva nota</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleNote(id) {
+  const s = document.getElementById('noteSection' + id);
+  s.style.display = s.style.display === 'none' ? 'block' : 'none';
+}
+
+function editNote(id) {
+  document.getElementById('noteText' + id).style.display = 'none';
+  document.getElementById('noteEdit' + id).style.display = 'block';
+  document.getElementById('noteEditBtn' + id).style.display = 'none';
+  document.getElementById('noteSaveBtn' + id).style.display = 'inline-block';
+}
+
+function saveNote(id) {
+  const val = document.getElementById('noteEdit' + id).value;
+  const idx = history.findIndex(e => e.id === id);
+  if (idx >= 0) {
+    history[idx].note = val;
+    localStorage.setItem('ms_history', JSON.stringify(history));
+  }
+  renderHistory();
+  document.getElementById('noteSection' + id).style.display = 'block';
+}
+
+function deleteEntry(id) {
+  history = history.filter(e => e.id !== id);
+  localStorage.setItem('ms_history', JSON.stringify(history));
+  renderHistory();
+}
+</script>
