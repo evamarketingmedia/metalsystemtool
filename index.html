@@ -190,6 +190,28 @@
               <input type="number" id="sellPrice" value="" min="0" step="100" placeholder="es. 5000" oninput="calc()" />
             </div>
           </div>
+
+          <div class="card" style="margin-top: 1rem;">
+            <div class="card-title">Dettaglio costi reali</div>
+            <div class="results-grid">
+              <div class="result-row">
+                <span class="result-label"><i class="ti ti-users-group" aria-hidden="true"></i> Costo cluster <span style="font-size:11px;color:var(--color-text-secondary)">(personale + spostamenti)</span></span>
+                <span class="result-val r-cost" id="rCluster">—</span>
+              </div>
+              <div class="result-row">
+                <span class="result-label"><i class="ti ti-tools" aria-hidden="true"></i> Costo montaggio</span>
+                <span class="result-val r-cost" id="rMount">—</span>
+              </div>
+              <div class="result-row">
+                <span class="result-label"><i class="ti ti-package" aria-hidden="true"></i> Costo materiale + trasporto</span>
+                <span class="result-val r-cost" id="rMaterial">—</span>
+              </div>
+              <div class="result-row" style="background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary);">
+                <span class="result-label" style="font-weight:500;color:var(--color-text-primary)"><i class="ti ti-sum" aria-hidden="true"></i> Costo totale reale</span>
+                <span class="result-val r-cost" id="rTotalReal" style="font-weight:600;">—</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div>
@@ -356,8 +378,12 @@ function calc() {
     marginP = marginE / sell;
   }
 
-  lastResult = { dim, dist, compl, matCost, matTransport, days, persons, sell, totalReal, priceMin, priceTarget, priceList, maxDiscountPct, maxDiscountEur, marginE, marginP };
+  lastResult = { dim, dist, compl, matCost, matTransport, days, persons, sell, clusterCost, mountCost, totalReal, priceMin, priceTarget, priceList, maxDiscountPct, maxDiscountEur, marginE, marginP };
 
+  document.getElementById('rCluster').textContent = fmt(clusterCost);
+  document.getElementById('rMount').textContent = fmt(mountCost);
+  document.getElementById('rMaterial').textContent = fmt(matCost + matTransport);
+  document.getElementById('rTotalReal').textContent = fmt(totalReal);
   document.getElementById('rCost').textContent = fmt(totalReal);
   document.getElementById('rMin').textContent = fmt(priceMin);
   document.getElementById('rTarget').textContent = fmt(priceTarget);
@@ -431,6 +457,8 @@ function renderHistory() {
         ${e.matTransport ? `<span class="tag">Trasporto mat.: ${fmt(e.matTransport)}</span>` : ''}
       </div>
       <div class="hist-numbers">
+        ${e.clusterCost != null ? `<div class="hist-num"><div class="hist-num-label">Costo cluster</div><div class="hist-num-val">${fmt(e.clusterCost)}</div></div>` : ''}
+        ${e.mountCost != null ? `<div class="hist-num"><div class="hist-num-label">Costo montaggio</div><div class="hist-num-val">${fmt(e.mountCost)}</div></div>` : ''}
         <div class="hist-num"><div class="hist-num-label">Costo reale</div><div class="hist-num-val">${fmt(e.totalReal)}</div></div>
         <div class="hist-num" style="border-left: 3px solid #f09595;"><div class="hist-num-label">Prezzo minimo</div><div class="hist-num-val" style="color:#a32d2d">${fmt(e.priceMin)}</div></div>
         <div class="hist-num" style="border-left: 3px solid #fac775;"><div class="hist-num-label">Prezzo target</div><div class="hist-num-val" style="color:#854f0b">${fmt(e.priceTarget)}</div></div>
